@@ -1,0 +1,34 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!--
+      Which Optimizely CMS major version to build for: 12 (default) or 13.
+      CMS 12 and CMS 13 need separate builds, because CMS 12 sites can also run on .NET 10:
+        dotnet build -p:CmsMajor=13
+      Each build gets its own output folders, so both can live side by side.
+    -->
+    <CmsMajor Condition="'$(CmsMajor)' == ''">12</CmsMajor>
+    <BaseOutputPath>bin\cms$(CmsMajor)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>obj\cms$(CmsMajor)\</BaseIntermediateOutputPath>
+    <!-- Keep each build from compiling the other build's generated files. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CmsMajor)' == '12'">
+    <CmsTargetFrameworks>net8.0;net10.0</CmsTargetFrameworks>
+    <CmsVersionRange>[12.17.1,13.0.0)</CmsVersionRange>
+    <CmsUiVersionRange>[12.22.4,13.0.0)</CmsUiVersionRange>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CmsMajor)' == '13'">
+    <CmsTargetFrameworks>net10.0</CmsTargetFrameworks>
+    <CmsVersionRange>[13.0.0,14.0.0)</CmsVersionRange>
+    <CmsUiVersionRange>[13.0.0,14.0.0)</CmsUiVersionRange>
+    <DefineConstants>$(DefineConstants);CMS13</DefineConstants>
+  </PropertyGroup>
+</Project>

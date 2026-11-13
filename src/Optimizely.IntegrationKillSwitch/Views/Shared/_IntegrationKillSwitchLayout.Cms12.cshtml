@@ -1,0 +1,29 @@
+@using EPiServer.Framework.Web.Resources
+@using EPiServer.Shell.Navigation
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>@ViewBag.Title</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @ClientResources.RenderResources("ShellCore")
+    @ClientResources.RenderResources("ShellCoreLightTheme")
+</head>
+<body>
+    @Html.CreatePlatformNavigationMenu()
+    <div @Html.ApplyPlatformNavigation()>
+        <div class="content-area-container">
+            <div class="axiom-layout-grid-container">
+                <div class="axiom-layout-grid">
+                    <div class="axiom-layout-grid__cell">
+                        <div class="axiom-grid-container">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

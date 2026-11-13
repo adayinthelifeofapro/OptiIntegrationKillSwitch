@@ -1,0 +1,136 @@
+@using Optimizely.IntegrationKillSwitch.Admin
+
+@model IntegrationKillSwitchViewModel
+
+@{
+    Layout = AdminLayout.Path;
+    ViewBag.Title = "Integration kill switches";
+}
+
+<div class="axiom-grid">
+    <div class="axiom-grid__cell">
+        <div class="axiom-grid-container soft-double--top soft-quad--sides">
+            <div class="epi-main-header">
+                <h1 class="axiom-typography--header1">Integration kill switches</h1>
+                <p>
+                    Switching an integration off here applies to every instance within a few seconds, with no deploy or restart.
+                    It blocks the integration's routes (404), its outbound HTTP calls (503) and any scripts it adds to the site.
+                </p>
+                <p>
+                    If the problem is a script running in visitors' browsers, also remove the vendor's hosts from the Content Security Policy
+                    in your CSP tool (e.g. Stott Security), and rotate any credentials the vendor holds.
+                    "Off in config" means appsettings has switched the integration off. Only a config change and restart can turn it back on.
+                </p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <p class="oui-attention @(Model.IsError ? "oui-attention--bad-news" : "oui-attention--good-news")">@Model.Message</p>
+            }
+
+            <table class="epi-default">
+                <thead>
+                    <tr>
+                        <th>Integration</th>
+                        <th>Status</th>
+                        <th>Blocks</th>
+                        <th>Last change</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var state in Model.States)
+                {
+                    <tr>
+                        <td>
+                            <strong>@state.Descriptor.DisplayName</strong> <code>@state.Descriptor.Name</code>
+                            @if (!string.IsNullOrEmpty(state.Descriptor.Description))
+                            {
+                                <br /><small>@state.Descriptor.Description</small>
+                            }
+                        </td>
+                        <td>
+                            @if (state.IsActive)
+                            {
+                                <span class="oui-badge oui-badge--live">Active</span>
+                            }
+                            else
+                            {
+                                <span class="oui-badge oui-badge--bad-news">Off</span>
+                            }
+                            @if (!state.EnabledInConfig)
+                            {
+                                <br /><small>Off in config</small>
+                            }
+                            @if (state.DisabledAtRuntime)
+                            {
+                                <br /><small>Switched off here</small>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var path in state.Descriptor.BlockedPaths)
+                            {
+                                <div><small>Path: <code>@path</code></small></div>
+                            }
+                            @foreach (var host in state.Descriptor.BlockedHosts)
+                            {
+                                <div><small>Host: <code>@host</code></small></div>
+                            }
+                        </td>
+                        <td>
+                            @if (state.ChangedUtc.HasValue)
+                            {
+                                <small>@state.ChangedUtc.Value.ToString("u") by @state.ChangedBy<br />@state.Reason</small>
+                            }
+                        </td>
+                        <td>
+                            <form method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="name" value="@state.Descriptor.Name" />
+                                @if (state.DisabledAtRuntime)
+                                {
+                                    <input type="hidden" name="disable" value="false" />
+                                    <input type="text" name="reason" placeholder="Reason (optional)" class="oui-input" />
+                                    <button type="submit" class="oui-button oui-button--highlight">Clear switch</button>
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="disable" value="true" />
+                                    <input type="text" name="reason" placeholder="Reason (required)" required class="oui-input" />
+                                    <button type="submit" class="oui-button oui-button--danger">Switch off</button>
+                                }
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <h2 class="axiom-typography--header2">Recent changes</h2>
+            @if (Model.Audit.Count == 0)
+            {
+                <p>No changes have been recorded.</p>
+            }
+            else
+            {
+                <table class="epi-default">
+                    <thead>
+                        <tr><th>When (UTC)</th><th>Integration</th><th>Change</th><th>By</th><th>Reason</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var entry in Model.Audit)
+                    {
+                        <tr>
+                            <td>@entry.ChangedUtc.ToString("u")</td>
+                            <td>@entry.Name</td>
+                            <td>@(entry.Disabled ? "Switched off" : "Switch cleared")</td>
+                            <td>@entry.ChangedBy</td>
+                            <td>@entry.Reason</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

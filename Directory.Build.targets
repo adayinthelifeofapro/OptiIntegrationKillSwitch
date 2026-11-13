@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="ValidateCmsMajor" BeforeTargets="Restore;Build" Condition="'$(CmsMajor)' != '12' And '$(CmsMajor)' != '13'">
+    <Error Text="CmsMajor must be 12 or 13 (was '$(CmsMajor)')." />
+  </Target>
+</Project>

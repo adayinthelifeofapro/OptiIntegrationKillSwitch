@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(CmsTargetFrameworks)</TargetFrameworks>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <PackageId Condition="'$(CmsMajor)' == '12'">OptiIntegrationKillSwitch</PackageId>
+    <PackageId Condition="'$(CmsMajor)' == '13'">OptiIntegrationKillSwitch.Cms13</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>OptiIntegrationKillSwitch contributors</Authors>
+    <Description>Kill switches for third-party integrations and add-ons in Optimizely CMS $(CmsMajor). Switch off a compromised integration's routes, outbound calls and scripts from the CMS admin, across all instances, with no deploy.</Description>
+    <PackageTags>Optimizely;EPiServer;CMS;Security;KillSwitch;FeatureFlag;AddOn</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="EPiServer.CMS.AspNetCore" Version="$(CmsVersionRange)" />
+    <PackageReference Include="EPiServer.CMS.UI.Core" Version="$(CmsUiVersionRange)" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- The CMS navigation bar is drawn differently in CMS 12 and 13, so each build compiles only its own admin layout. -->
+  <ItemGroup Condition="'$(CmsMajor)' == '12'">
+    <Content Remove="Views\Shared\_IntegrationKillSwitchLayout.Cms13.cshtml" />
+    <None Include="Views\Shared\_IntegrationKillSwitchLayout.Cms13.cshtml" Pack="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(CmsMajor)' == '13'">
+    <Content Remove="Views\Shared\_IntegrationKillSwitchLayout.Cms12.cshtml" />
+    <None Include="Views\Shared\_IntegrationKillSwitchLayout.Cms12.cshtml" Pack="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <InternalsVisibleTo Include="Optimizely.IntegrationKillSwitch.Tests" />
+  </ItemGroup>
+
+</Project>
